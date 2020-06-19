@@ -30,8 +30,6 @@ describe('POST register students to specified teacher', () => {
       });
     });
   });
-
-
 describe('GET common students - 1 teacher', () => {
     it('retrieved list', (done) => {
         chai
@@ -47,7 +45,6 @@ describe('GET common students - 1 teacher', () => {
             })
     })
 })
-
 describe('GET common students - 2 teachers', () => {
     it('retrieved list', (done) => {
         chai
@@ -64,7 +61,6 @@ describe('GET common students - 2 teachers', () => {
             })
     })
 })
-
 describe('POST suspend specific student', () => {
     it('should respond with 204', (done) => {
       chai
@@ -80,8 +76,6 @@ describe('POST suspend specific student', () => {
       });
     });
   });
-
-
   describe('POST receipient list', () => {
     it('should respond with list of recipients', (done) => {
       chai
@@ -96,7 +90,6 @@ describe('POST suspend specific student', () => {
         res.status.should.equal(200);
         res.type.should.equal('application/json');
         res.body.should.have.property('recipients').to.be.an.instanceof(Array);
-
         done();
       });
     });

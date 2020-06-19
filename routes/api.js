@@ -13,7 +13,6 @@ const consoleTransport = new winston.transports.Console()
 const options = {
     transports: [consoleTransport]
 }
-
 const logger = new winston.createLogger(options)
 
 
@@ -248,10 +247,7 @@ router.post('/retrievefornotifications', async function (req, res, next) {
         var supplmenentEmails = findEmailAddresses(notificationString); // grab an array of emails that were personally @ with
         var Students = [];
 
-
         let studentMap = new Map();
-    
-  
         try{
             const registeredStudents =  await knex.select('STUDENT_EMAIL').distinct().from('registeration').where('TEACHER_EMAIL', teacher).returning().then(result => {return result});
             for( j = 0; j< registeredStudents.length;j++)
@@ -267,7 +263,14 @@ router.post('/retrievefornotifications', async function (req, res, next) {
         {
             res.status(500).send({ message: "Failed to retrieve registered students to teacher, contact administrator ", error: e });
         }
-        
+        //process supplmentary notification targets, requirement stated NO SUSPENDED allowed
+        for(i = 0 ; i< supplmenentEmails.length;i++)
+        {
+            studentMap.set(supplmenentEmails[i],1);
+        }
+
+        console.log(studentMap);
+
         try{
             const suspendedStudents =  await knex.select('STUDENT_EMAIL').distinct().from('student').where('STUDENT_STATUS', "SUSPENDED").returning().then(result => {return result});
             for( j = 0; j< suspendedStudents.length;j++)
@@ -286,11 +289,7 @@ router.post('/retrievefornotifications', async function (req, res, next) {
             res.status(500).send({ message: "Failed to retrieve suspended students, contact administrator ", error: e });
         }
 
-        //final processing to add supplementary students
-        for(i = 0 ; i< supplmenentEmails.length;i++)
-        {
-            studentMap.set(supplmenentEmails[i],1);
-        }
+
         //transform to json and send
         for (let [k, v] of studentMap) {
             Students.push(k);
