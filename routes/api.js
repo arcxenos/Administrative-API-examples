@@ -18,6 +18,7 @@ const logger = new winston.createLogger(options)
 
 async function checkAndInsertTeacher(teacherEmail)
 {
+    // check if teacher exists, if not, add into db
     try {
 
         let val = await teacherModel.where({ 'TEACHER_EMAIL': teacherEmail }).fetch({require:true});
@@ -36,6 +37,7 @@ async function checkAndInsertTeacher(teacherEmail)
 }
 async function checkAndInsertStudent(studentEmail)
 {
+    // check if student exists, if not, add into db
     try {
         let val = await studentModel.where({'STUDENT_EMAIL': studentEmail}).fetch({require:true});
         return true;
@@ -58,9 +60,7 @@ async function registerTeacherAndStudent(teacherEmail,studentEmail)
     } catch (e) 
     {
         res.status(500).send({ message: "Failed to register Teacher "+ teacherEmail+" with Student "+ studentEmail, error: e });
-
         return false;
-
     } 
 }
 
@@ -69,7 +69,7 @@ router.post('/register', async function (req, res, next) {
       if (!req.query.api) {
         var teacherEmail = req.body.teacher;
         var students = req.body.students;
-
+        // First check if teacher is ok, then iterate the students and check if they are ok
         try
         {
             var result = await checkAndInsertTeacher(teacherEmail);
@@ -90,6 +90,7 @@ router.post('/register', async function (req, res, next) {
                 var result = await checkAndInsertStudent(element);
                 if(result)
                 {
+                    //existence of student confirmed, register with teacher
                     var inserted = await registerTeacherAndStudent(teacherEmail, element);
                     if(!inserted)
                     {
@@ -117,7 +118,7 @@ async function generateCommonMap(Teachers)
     let studentMap = new Map();
     var internalCounter = 0;
     var teacherCount = Teachers.length;
-
+    // Iterate through the amount of teachers supplied by request, then put distinct students into a map for each teacher, incrementing every time the same student gets called.
     for(i = 0; i < teacherCount; i++)
     {
         try{
@@ -162,7 +163,7 @@ try{
             {
                 res.status(500).send({ message: "Failed to Obtain list of Common Students", error: "" });
             }
-
+            // iterate through target map, If student is called the same amount as teachers supplied, it means student is present for all teachers involved
             for (let [k, v] of studentTar) {
                 if (v == teacherCount)
                 {
@@ -263,14 +264,11 @@ router.post('/retrievefornotifications', async function (req, res, next) {
         {
             res.status(500).send({ message: "Failed to retrieve registered students to teacher, contact administrator ", error: e });
         }
-        //process supplmentary notification targets, requirement stated NO SUSPENDED allowed
+        //process supplmentary notification targets, requirement stated NO SUSPENDED allowed so process supplement first, to be remove if suspended found
         for(i = 0 ; i< supplmenentEmails.length;i++)
         {
             studentMap.set(supplmenentEmails[i],1);
         }
-
-        console.log(studentMap);
-
         try{
             const suspendedStudents =  await knex.select('STUDENT_EMAIL').distinct().from('student').where('STUDENT_STATUS', "SUSPENDED").returning().then(result => {return result});
             for( j = 0; j< suspendedStudents.length;j++)
@@ -278,7 +276,7 @@ router.post('/retrievefornotifications', async function (req, res, next) {
                 var target = suspendedStudents[j].STUDENT_EMAIL;
                 if(studentMap.get(target))
                 {
-                    //if there is suspended student in the list, drop them
+                    //if there is suspended student in the map, drop them
                     studentMap.delete(target);
                 }
             }
