@@ -53,7 +53,7 @@ Please import the required tables through importing adminsystem.sql
 
 ```sh
   1. Open Terminal
-  2. Type (without Quotations) "$ npm install --global mocha" in Terminal to load missing dependencies
+  2. Type (without Quotations) "npm install --global mocha" in Terminal to load missing dependencies
   3. Type (without Quotations) "mocha" in terminal
   4. Check unit tests status
 ```
